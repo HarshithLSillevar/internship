@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CyberSim Pro - Interactive Cybersecurity Labs & Simulation</title>
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="An interactive cybersecurity training and simulation platform mimicking real-world cyber SOC and attack/defense scenarios.">
+  <meta name="keywords" content="cybersecurity, simulation, training, SOC, Nmap, Burp Suite, XSS, SQL Injection, Password cracking, SIEM, Splunk">
+  
+  <!-- Premium Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Local Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  
+  <!-- Matrix Glow Background Canvas -->
+  <canvas id="matrix-canvas"></canvas>
+  <div class="scanlines"></div>
+
+  <!-- Main Application Wrapper -->
+  <div class="app-container">
+    
+    <!-- Top HUD Header -->
+    <header class="app-header">
+      <div class="logo-area">
+        <div class="cyber-pulse"></div>
+        <h1 class="logo-title">CYBER<span>SIM</span> PRO</h1>
+        <span class="badge badge-sec">SOC TERMINAL ACTIVE</span>
+      </div>
+      
+      <!-- Live Metrics Gauge and Health Center -->
+      <div class="header-metrics">
+        <div class="metric-block">
+          <span class="metric-label">System Security Score</span>
+          <div class="score-container">
+            <svg class="score-ring" width="46" height="46">
+              <circle class="score-ring-bg" cx="23" cy="23" r="18"></circle>
+              <circle id="header-score-ring" class="score-ring-value" cx="23" cy="23" r="18" stroke-dasharray="113" stroke-dashoffset="56"></circle>
+            </svg>
+            <span id="header-score-text" class="score-text">50%</span>
+          </div>
+        </div>
+        
+        <div class="metric-block hide-mobile">
+          <span class="metric-label">Mitigations Applied</span>
+          <span id="header-mitigations-count" class="metric-value txt-cyan">0 / 4</span>
+        </div>
+        
+        <div class="metric-block hide-mobile">
+          <span class="metric-label">Labs Complete</span>
+          <span id="header-labs-count" class="metric-value txt-green">0%</span>
+        </div>
+
+        <button id="btn-reset-session" class="btn btn-icon btn-outline-danger" title="Reset Session Progress">
+          <i data-lucide="rotate-ccw"></i>
+        </button>
+      </div>
+    </header>
+
+    <div class="app-body">
+      
+      <!-- Left Sidebar Navigation -->
+      <aside class="app-sidebar">
+        <nav class="nav-menu">
+          <button class="nav-item active" data-tab="dashboard" id="nav-dashboard">
+            <i data-lucide="layout-dashboard"></i>
+            <span>SOC Dashboard</span>
+          </button>
+          
+          <button class="nav-item" data-tab="recon" id="nav-recon">
+            <i data-lucide="radar"></i>
+            <span>1. Recon & Nmap</span>
+          </button>
+          
+          <button class="nav-item" data-tab="webvuln" id="nav-webvuln">
+            <i data-lucide="globe"></i>
+            <span>2. Web Vuln (Burp)</span>
+          </button>
+          
+          <button class="nav-item" data-tab="password" id="nav-password">
+            <i data-lucide="key-round"></i>
+            <span>3. Passwords Lab</span>
+          </button>
+          
+          <button class="nav-item" data-tab="siem" id="nav-siem">
+            <i data-lucide="terminal"></i>
+            <span>4. SIEM Analyzer</span>
+          </button>
+          
+          <button class="nav-item" data-tab="tools" id="nav-tools">
+            <i data-lucide="monitor"></i>
+            <span>CLI Terminal</span>
+          </button>
+          
+          <button class="nav-item" data-tab="reports" id="nav-reports">
+            <i data-lucide="file-check"></i>
+            <span>Report Generator</span>
+          </button>
+        </nav>
+
+        <!-- Sidebar Footer Status -->
+        <div class="sidebar-status">
+          <div class="status-indicator online"></div>
+          <div class="status-details">
+            <p class="status-title">SecOps Node #419</p>
+            <p class="status-subtitle">Threat Intel Online</p>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Activity Area -->
+      <main class="app-content">
+        
+        <!-- ==================== DASHBOARD PANEL ==================== -->
+        <section id="tab-dashboard" class="tab-panel active">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">Operations Dashboard</h2>
+              <p class="panel-subtitle">Overview of system threat metrics, active defense postures, and labs progress.</p>
+            </div>
+            <span class="pulse-tag font-mono text-xs"><span class="ping"></span>LIVE RADAR</span>
+          </div>
+
+          <!-- Quick Stats Grid -->
+          <div class="grid grid-4 gap-sm mb-md">
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-title">Threat Mitigation Level</span>
+                <i class="stat-icon txt-cyan" data-lucide="shield-check"></i>
+              </div>
+              <div id="dash-mitigation-status" class="stat-number txt-cyan">Low</div>
+              <p class="stat-meta">Vulnerabilities secured</p>
+            </div>
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-title">Network Attack Vectors</span>
+                <i class="stat-icon txt-rose" data-lucide="shield-alert"></i>
+              </div>
+              <div id="dash-vectors-count" class="stat-number txt-rose">4 / 4</div>
+              <p class="stat-meta">Active exploits exposed</p>
+            </div>
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-title">SIEM Alerts Pending</span>
+                <i class="stat-icon txt-warning" data-lucide="bell"></i>
+              </div>
+              <div id="dash-alerts-count" class="stat-number txt-warning">15</div>
+              <p class="stat-meta">Continuous event monitoring</p>
+            </div>
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-title">Training Progress</span>
+                <i class="stat-icon txt-green" data-lucide="award"></i>
+              </div>
+              <div id="dash-progress-text" class="stat-number txt-green">0%</div>
+              <p class="stat-meta">Labs finalized</p>
+            </div>
+          </div>
+
+          <!-- Dashboard Widgets Layout -->
+          <div class="grid grid-2-1 gap-md">
+            <div class="card p-md glass-card flex flex-col justify-between">
+              <div>
+                <h3 class="card-title"><i data-lucide="activity" class="txt-cyan mr-xs"></i>System Security Posture</h3>
+                <p class="card-subtitle">Real-time threat level analysis matching cybersecurity configurations.</p>
+              </div>
+              <div class="security-chart-container py-md">
+                <!-- SVG Custom Graph showing mock system telemetry -->
+                <svg viewBox="0 0 500 200" class="telemetry-chart">
+                  <defs>
+                    <linearGradient id="chart-glow" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="var(--cyan-glow)" stop-opacity="0.4"/>
+                      <stop offset="100%" stop-color="var(--cyan-glow)" stop-opacity="0"/>
+                    </linearGradient>
+                  </defs>
+                  <path id="chart-path" d="M 0 160 Q 75 140 150 170 T 300 130 T 450 150 T 500 100" fill="none" stroke="var(--cyan)" stroke-width="3"></path>
+                  <path id="chart-area" d="M 0 160 Q 75 140 150 170 T 300 130 T 450 150 T 500 100 L 500 200 L 0 200 Z" fill="url(#chart-glow)"></path>
+                  <!-- Telemetry Grid Lines -->
+                  <line x1="0" y1="50" x2="500" y2="50" stroke="var(--border-color)" stroke-dasharray="4" stroke-opacity="0.3"></line>
+                  <line x1="0" y1="100" x2="500" y2="100" stroke="var(--border-color)" stroke-dasharray="4" stroke-opacity="0.3"></line>
+                  <line x1="0" y1="150" x2="500" y2="150" stroke="var(--border-color)" stroke-dasharray="4" stroke-opacity="0.3"></line>
+                </svg>
+              </div>
+              <div class="flex justify-between items-center mt-sm border-t border-glass pt-sm font-mono text-xs">
+                <span>SECOPS AGENT: OK</span>
+                <span id="dash-telemetry-status" class="txt-cyan">SYSTEM SCANNING...</span>
+              </div>
+            </div>
+
+            <!-- Training Labs Checklist -->
+            <div class="card p-md glass-card flex flex-col justify-between">
+              <div>
+                <h3 class="card-title"><i data-lucide="check-square" class="txt-green mr-xs"></i>Training Milestones</h3>
+                <p class="card-subtitle">Complete these interactive lab tasks to harden the simulation framework.</p>
+              </div>
+              <div class="task-list mt-md">
+                <div class="task-item" id="task-recon">
+                  <div class="task-check"><i data-lucide="circle"></i></div>
+                  <div class="task-details">
+                    <p class="task-title">Run Target Nmap Scan</p>
+                    <p class="task-desc">Scan target hosts to discover open ports in Recon Lab.</p>
+                  </div>
+                </div>
+                <div class="task-item" id="task-webvuln">
+                  <div class="task-check"><i data-lucide="circle"></i></div>
+                  <div class="task-details">
+                    <p class="task-title">Bypass Admin Login via SQLi</p>
+                    <p class="task-desc">Intercept and exploit login queries with Burp Suite Proxy.</p>
+                  </div>
+                </div>
+                <div class="task-item" id="task-password">
+                  <div class="task-check"><i data-lucide="circle"></i></div>
+                  <div class="task-details">
+                    <p class="task-title">Crack Encrypted Database Hash</p>
+                    <p class="task-desc">Simulate brute-force attacks and select modern hash hashing.</p>
+                  </div>
+                </div>
+                <div class="task-item" id="task-siem">
+                  <div class="task-check"><i data-lucide="circle"></i></div>
+                  <div class="task-details">
+                    <p class="task-title">Block Attack IPs in SIEM Console</p>
+                    <p class="task-desc">Mitigate the live brute force threat in log analyzer.</p>
+                  </div>
+                </div>
+              </div>
+              <button id="btn-go-to-lab" class="btn btn-primary w-full mt-md">
+                <span>Start Scanning (Lab 1)</span>
+                <i data-lucide="arrow-right"></i>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== RECONNAISSANCE & NMAP ==================== -->
+        <section id="tab-recon" class="tab-panel">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">Reconnaissance & Port Scanning</h2>
+              <p class="panel-subtitle">Scan network targets to discover active services, operating systems, and open ports.</p>
+            </div>
+          </div>
+
+          <div class="grid grid-1-1 gap-md">
+            <!-- Recon Terminal and Scan Actions -->
+            <div class="flex flex-col gap-md">
+              <div class="card p-md glass-card flex-1 flex flex-col">
+                <h3 class="card-title mb-sm"><i data-lucide="scan" class="txt-cyan mr-xs"></i>Target Configuration</h3>
+                <div class="flex gap-sm items-center mb-md">
+                  <div class="input-group flex-1">
+                    <span class="input-addon font-mono text-sm">TARGET IP</span>
+                    <input type="text" id="recon-ip-input" class="input font-mono" value="192.168.4.15" placeholder="192.168.1.1">
+                  </div>
+                  <div class="select-group">
+                    <select id="recon-scan-type" class="select font-mono">
+                      <option value="-sS">-sS (SYN Stealth Scan)</option>
+                      <option value="-sV">-sV (Version Detection)</option>
+                      <option value="-O">-O (OS Detection)</option>
+                      <option value="-A">-A (Aggressive Audit)</option>
+                    </select>
+                  </div>
+                  <button id="btn-run-scan" class="btn btn-primary">
+                    <i data-lucide="play-circle"></i>
+                    <span>Execute Scan</span>
+                  </button>
+                </div>
+
+                <!-- Simulated Scanning Terminal -->
+                <div class="terminal-shell flex-1 flex flex-col justify-between" style="min-height: 250px;">
+                  <div class="terminal-header">
+                    <div class="terminal-window-buttons">
+                      <span></span><span></span><span></span>
+                    </div>
+                    <span class="terminal-title">nmap@secops-terminal:~</span>
+                  </div>
+                  <div id="recon-terminal-log" class="terminal-body scrollable font-mono flex-1">
+                    <span class="terminal-prompt">$</span> Enter target IP and click 'Execute Scan' above to scan the host...
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SVG Network Map & Target Vulnerability details -->
+            <div class="flex flex-col gap-md">
+              <div class="card p-md glass-card flex-1 flex flex-col justify-between" style="min-height: 420px;">
+                <h3 class="card-title"><i data-lucide="network" class="txt-cyan mr-xs"></i>Interactive Network Node Map</h3>
+                <p class="card-subtitle mb-sm">Click discovered nodes in the subnet to audit open ports and risk ratings.</p>
+                
+                <!-- Subnet Visual Node Graph -->
+                <div class="network-map-wrapper flex-1 flex items-center justify-center relative">
+                  <svg id="network-map-svg" width="100%" height="240" viewBox="0 0 400 240">
+                    <!-- Lines connecting nodes -->
+                    <line x1="80" y1="120" x2="200" y2="120" stroke="var(--border-color)" stroke-width="2" stroke-dasharray="4" id="net-line-1"></line>
+                    <line x1="320" y1="120" x2="200" y2="120" stroke="var(--border-color)" stroke-width="2" stroke-dasharray="4" id="net-line-2"></line>
+                    <line x1="200" y1="40" x2="200" y2="120" stroke="var(--border-color)" stroke-width="2" stroke-dasharray="4" id="net-line-3"></line>
+                    
+                    <!-- Gateway Router Node -->
+                    <circle cx="200" cy="120" r="18" fill="var(--bg-card)" stroke="var(--cyan)" stroke-width="2" class="node-pulse"></circle>
+                    <text x="200" y="150" text-anchor="middle" fill="var(--text-color)" font-family="Space Grotesk" font-size="10" font-weight="bold">Gateway Router</text>
+                    
+                    <!-- Node 1: User Workstation -->
+                    <g class="network-node active" id="node-workstation" transform="translate(80, 120)">
+                      <circle cx="0" cy="0" r="14" fill="var(--bg-card)" stroke="var(--green)" stroke-width="2"></circle>
+                      <text x="0" y="-22" text-anchor="middle" fill="var(--text-color)" font-family="Space Grotesk" font-size="10">Workstation</text>
+                      <text x="0" y="24" text-anchor="middle" fill="var(--text-color-muted)" font-family="Fira Code" font-size="8">192.168.4.10</text>
+                    </g>
+                    
+                    <!-- Node 2: Database Server -->
+                    <g class="network-node" id="node-db" transform="translate(200, 40)">
+                      <circle cx="0" cy="0" r="14" fill="var(--bg-card)" stroke="var(--border-color)" stroke-width="2" id="node-circle-db"></circle>
+                      <text x="0" y="-22" text-anchor="middle" fill="var(--text-color)" font-family="Space Grotesk" font-size="10">DB Server</text>
+                      <text x="0" y="24" text-anchor="middle" fill="var(--text-color-muted)" font-family="Fira Code" font-size="8">192.168.4.12</text>
+                    </g>
+                    
+                    <!-- Node 3: Target Web App Server -->
+                    <g class="network-node" id="node-target" transform="translate(320, 120)">
+                      <circle cx="0" cy="0" r="14" fill="var(--bg-card)" stroke="var(--border-color)" stroke-width="2" id="node-circle-target"></circle>
+                      <text x="0" y="-22" text-anchor="middle" fill="var(--text-color)" font-family="Space Grotesk" font-size="10">Web App (DVWA)</text>
+                      <text x="0" y="24" text-anchor="middle" fill="var(--text-color-muted)" font-family="Fira Code" font-size="8">192.168.4.15</text>
+                    </g>
+                  </svg>
+                  
+                  <div class="scan-overlay" id="recon-scan-overlay">
+                    <div class="scan-loading-pulse"></div>
+                    <span class="font-mono text-sm mt-sm">SCANNING TARGET NETWORK...</span>
+                  </div>
+                </div>
+
+                <!-- Audit Drawer Detail -->
+                <div class="audit-details-pane mt-sm border-t border-glass pt-sm font-mono text-xs">
+                  <div id="recon-audit-empty" class="text-center py-sm txt-muted">
+                    No target selected. Double-click or scan to inspect open ports.
+                  </div>
+                  <div id="recon-audit-details" class="hidden">
+                    <div class="flex justify-between items-center mb-xs">
+                      <span class="font-bold txt-cyan" id="recon-audit-ip">192.168.4.15</span>
+                      <span class="badge badge-danger" id="recon-audit-risk">CRITICAL RISK</span>
+                    </div>
+                    <div class="grid grid-2 gap-sm text-xs mt-xs">
+                      <div>
+                        <strong>OS:</strong> <span id="recon-audit-os">Linux Ubuntu 22.04</span>
+                      </div>
+                      <div>
+                        <strong>Vulnerabilities:</strong> <span id="recon-audit-vulns">SQLi, Stored XSS, Weak Hash</span>
+                      </div>
+                    </div>
+                    <div class="ports-list mt-sm">
+                      <table class="table-ports">
+                        <thead>
+                          <tr>
+                            <th>PORT</th>
+                            <th>SERVICE</th>
+                            <th>STATUS</th>
+                            <th>SUGGESTIONS</th>
+                          </tr>
+                        </thead>
+                        <tbody id="recon-audit-ports-body">
+                          <!-- Filled by recon.js -->
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== WEB APPLICATION & BURP SUITE ==================== -->
+        <section id="tab-webvuln" class="tab-panel">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">Web Application Security & Burp Proxy</h2>
+              <p class="panel-subtitle">Exploit target login fields and intercept parameters using a mock proxy suite.</p>
+            </div>
+          </div>
+
+          <div class="grid grid-1-1 gap-md">
+            <!-- Left Side: Target Web App Container -->
+            <div class="card p-none glass-card flex flex-col justify-between" style="min-height: 480px;">
+              <div class="app-browser-bar flex justify-between items-center p-xs border-b border-glass bg-glass">
+                <div class="flex items-center gap-xs">
+                  <div class="browser-dot bg-danger"></div>
+                  <div class="browser-dot bg-warning"></div>
+                  <div class="browser-dot bg-success"></div>
+                </div>
+                <div class="browser-address flex-1 mx-md font-mono text-xs text-center py-xs rounded bg-deep">
+                  http://192.168.4.15/dvwa/login.php
+                </div>
+                <div class="browser-refresh p-xs"><i data-lucide="rotate-cw" style="width: 14px; height: 14px;"></i></div>
+              </div>
+
+              <!-- Browser Content Screen -->
+              <div class="browser-body flex-1 p-md flex flex-col justify-center items-center relative" id="webvuln-browser-screen">
+                
+                <!-- Web Target Views -->
+                <!-- 1. DVWA LOGIN VIEW -->
+                <div id="web-view-login" class="web-form-container glass-card p-md w-full max-w-sm">
+                  <div class="text-center mb-md">
+                    <i data-lucide="shield-alert" class="txt-rose" style="width: 32px; height: 32px;"></i>
+                    <h4 class="font-bold font-heading text-lg mt-xs">DVWA Login Portal</h4>
+                    <p class="text-xs txt-muted">Security Level: Low</p>
+                  </div>
+                  <form id="form-dvwa-login" onsubmit="return false;">
+                    <div class="form-group mb-sm">
+                      <label class="label text-xs">Username</label>
+                      <input type="text" id="web-login-user" class="input text-sm" placeholder="Username (e.g. admin)">
+                    </div>
+                    <div class="form-group mb-md">
+                      <label class="label text-xs">Password</label>
+                      <input type="password" id="web-login-pass" class="input text-sm" placeholder="••••••••">
+                    </div>
+                    <button id="btn-web-login-submit" class="btn btn-danger w-full text-sm py-sm">Authenticate</button>
+                  </form>
+                  <p id="web-login-feedback" class="text-xs font-mono text-center txt-rose mt-sm">&nbsp;</p>
+                </div>
+
+                <!-- 2. DVWA COMMENTS VIEW -->
+                <div id="web-view-comments" class="web-form-container glass-card p-md w-full max-w-sm hidden">
+                  <div class="flex justify-between items-center mb-md border-b border-glass pb-xs">
+                    <div>
+                      <h4 class="font-bold text-sm">Secure-App Feedback Book</h4>
+                      <p class="text-xs txt-muted">Audit for Stored Cross-Site Scripting (XSS)</p>
+                    </div>
+                    <button class="btn btn-outline-cyan text-xs py-xs" id="btn-logout-dvwa">Logout</button>
+                  </div>
+                  
+                  <div class="feedback-comments-feed scrollable border border-glass rounded p-xs mb-sm bg-deep" id="web-comments-feed" style="height: 120px;">
+                    <!-- Prepopulated messages -->
+                  </div>
+
+                  <form id="form-dvwa-feedback" onsubmit="return false;">
+                    <div class="form-group mb-sm">
+                      <label class="label text-xs">Guest Name</label>
+                      <input type="text" id="web-feed-name" class="input text-sm" value="HackerAnon">
+                    </div>
+                    <div class="form-group mb-md">
+                      <label class="label text-xs">Feedback Comment</label>
+                      <textarea id="web-feed-text" class="input text-sm" placeholder="Write feedback..." style="height: 55px; resize: none;"></textarea>
+                    </div>
+                    <button id="btn-web-feed-submit" class="btn btn-cyan w-full text-sm">Submit Comment</button>
+                  </form>
+                </div>
+
+                <!-- Browser Screen Locked Overlay (while Proxy intercept is ON) -->
+                <div class="browser-lock-overlay" id="webvuln-browser-lock">
+                  <div class="text-center">
+                    <i data-lucide="circle-dot" class="txt-rose node-pulse" style="width: 42px; height: 42px;"></i>
+                    <p class="font-mono text-sm mt-sm txt-rose">REQUEST CAPTURED IN BURP PROXY</p>
+                    <p class="text-xs txt-muted mt-xs">Modify or forward the request in the Proxy window to proceed.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Side: Burp Intercept Proxy -->
+            <div class="card p-md glass-card flex flex-col justify-between" style="min-height: 480px;">
+              <div>
+                <div class="flex justify-between items-center mb-sm">
+                  <h3 class="card-title"><i data-lucide="layers" class="txt-rose mr-xs"></i>Burp Proxy Intercept Panel</h3>
+                  <div class="flex items-center gap-xs font-mono text-xs">
+                    <span>STATUS:</span>
+                    <span id="burp-status-badge" class="badge badge-outline-secondary">INTERCEPT IS OFF</span>
+                  </div>
+                </div>
+                
+                <!-- Proxy Control Buttons -->
+                <div class="flex gap-sm mb-md">
+                  <button id="btn-burp-toggle" class="btn btn-outline-rose flex-1">
+                    <i data-lucide="power"></i>
+                    <span>Intercept On</span>
+                  </button>
+                  <button id="btn-burp-forward" class="btn btn-outline-cyan flex-1" disabled>
+                    <i data-lucide="arrow-right-circle"></i>
+                    <span>Forward Request</span>
+                  </button>
+                  <button id="btn-burp-drop" class="btn btn-outline-danger flex-1" disabled>
+                    <i data-lucide="trash-2"></i>
+                    <span>Drop</span>
+                  </button>
+                </div>
+
+                <!-- HTTP Payload Text Editor -->
+                <div class="proxy-editor-wrapper">
+                  <label class="label font-mono text-xs mb-xs flex justify-between">
+                    <span>RAW REQUEST ENVELOPE</span>
+                    <span class="txt-muted">Headers & parameters editable</span>
+                  </label>
+                  <textarea id="burp-raw-editor" class="textarea-proxy font-mono text-xs" readonly placeholder="Burp Proxy is idle. Submit a form in the mock DVWA app on the left with 'Intercept On' to capture HTTP packets."></textarea>
+                </div>
+              </div>
+
+              <!-- Vulnerability exploit info block -->
+              <div class="mitigation-box mt-md border-t border-glass pt-sm font-mono text-xs">
+                <span class="txt-warning font-bold">Vulnerability Diagnostics:</span>
+                <p class="txt-muted mt-xs" id="burp-diagnostic-info">Use Burp proxy to audit web transactions. Inject SQL payload `admin' OR '1'='1` into user authentication requests, or inject scripts `<script>alert('XSS')</script>` inside feed messages.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== PASSWORD SECURITY & CRACKING ==================== -->
+        <section id="tab-password" class="tab-panel">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">Password Security & Cracking</h2>
+              <p class="panel-subtitle">Analyze password strength, calculate entropy, and simulate dictionary/brute-force attacks.</p>
+            </div>
+          </div>
+
+          <div class="grid grid-1-1 gap-md">
+            <!-- Left Side: Password Strength Testing & Hashing -->
+            <div class="card p-md glass-card flex flex-col justify-between" style="min-height: 480px;">
+              <div>
+                <h3 class="card-title mb-sm"><i data-lucide="lock" class="txt-cyan mr-xs"></i>Strength Auditor</h3>
+                
+                <!-- Password input test -->
+                <div class="form-group mb-md">
+                  <label class="label text-xs">Test a Password</label>
+                  <div class="relative">
+                    <input type="text" id="pass-strength-input" class="input font-mono pr-xl" value="admin123" placeholder="Enter password to test...">
+                    <button class="absolute top-0 right-0 h-full px-sm txt-muted" id="btn-toggle-pass-visible" title="Hide/Show Password">
+                      <i data-lucide="eye" style="width:16px;"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Dynamic Strength Meter -->
+                <div class="strength-meter-bar mb-md">
+                  <div id="strength-meter-fill" class="strength-meter-fill bg-danger" style="width: 25%;"></div>
+                </div>
+
+                <div class="grid grid-2 gap-sm mb-md font-mono text-xs">
+                  <div>
+                    <strong>Rating:</strong> <span id="pass-rating-text" class="txt-rose font-bold">WEAK</span>
+                  </div>
+                  <div>
+                    <strong>Entropy:</strong> <span id="pass-entropy-text" class="txt-rose">23.2 bits</span>
+                  </div>
+                  <div>
+                    <strong>Est. Crack Time (Online):</strong> <span id="pass-time-online" class="txt-rose">&lt; 1 sec</span>
+                  </div>
+                  <div>
+                    <strong>Est. Crack Time (Offline):</strong> <span id="pass-time-offline" class="txt-rose">&lt; 1 sec</span>
+                  </div>
+                </div>
+
+                <!-- Security Hash Functions selection -->
+                <div class="border-t border-glass pt-sm mt-sm">
+                  <h4 class="font-bold text-xs mb-sm">Hash Encryption Configuration</h4>
+                  <div class="form-group mb-sm">
+                    <label class="label text-xs">Active Storage Function</label>
+                    <div class="select-group">
+                      <select id="pass-hash-select" class="select font-mono text-xs">
+                        <option value="MD5">MD5 (Insecure - Fast, instant lookup tables)</option>
+                        <option value="SHA256">SHA-256 (Moderately Insecure - Susceptible to GPU rigs)</option>
+                        <option value="BCRYPT">BCrypt (Secure - Adaptive workload hashing, slows offline attacks)</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="label text-xs">Encrypted Hash Output</label>
+                    <input type="text" id="pass-hash-output" class="input font-mono text-xs bg-deep" readonly value="21232f297a57a5a743894a0e4a801fc3">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Recommendation Panel -->
+              <div class="mitigation-box mt-md border-t border-glass pt-sm font-mono text-xs">
+                <span class="txt-cyan font-bold"><i data-lucide="lightbulb" class="mr-xs"></i>Defense Mitigations:</span>
+                <p id="pass-recs" class="txt-muted mt-xs">Avoid dictionary words and sequences. Implement adaptive key-stretching functions (like Bcrypt or Argon2id) to increase offline crack costs.</p>
+              </div>
+            </div>
+
+            <!-- Right Side: Cracking Simulation Engine -->
+            <div class="card p-md glass-card flex flex-col justify-between" style="min-height: 480px;">
+              <div>
+                <h3 class="card-title mb-sm"><i data-lucide="swords" class="txt-rose mr-xs"></i>Hashcat Attack Simulator</h3>
+                
+                <!-- Target hash details -->
+                <div class="grid grid-2 gap-sm mb-md font-mono text-xs">
+                  <div>
+                    <strong>Target Username:</strong> <span class="txt-warning">admin</span>
+                  </div>
+                  <div>
+                    <strong>Target Hash (MD5):</strong> <span class="txt-muted font-bold">21232f29...1fc3</span>
+                  </div>
+                </div>
+
+                <!-- Attack parameters -->
+                <div class="grid grid-2 gap-sm mb-md">
+                  <div class="form-group">
+                    <label class="label text-xs">Attack Method</label>
+                    <select id="crack-method" class="select font-mono text-xs">
+                      <option value="dictionary">Dictionary Wordlist Attack</option>
+                      <option value="bruteforce">Brute Force (6 char alpha-numeric)</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="label text-xs">Wordlist Selection</label>
+                    <select id="crack-wordlist" class="select font-mono text-xs">
+                      <option value="top100">rockyou_top100.txt (Fastest)</option>
+                      <option value="top1000">rockyou_top1000.txt (Large)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Attack progress trackers -->
+                <div class="panel-terminal p-sm mb-md font-mono text-xs" style="height: 120px; overflow: hidden; background: #070a14;">
+                  <div id="crack-console-lines" class="scrollable h-full text-left font-mono" style="line-height: 1.4; color: var(--green);">
+                    [Hashcat Engine Idle] Click 'Launch Attack' to initiate decryption.
+                  </div>
+                </div>
+
+                <!-- Live cracker graph stats -->
+                <div class="grid grid-3 gap-xs mb-sm font-mono text-xs text-center border-t border-glass pt-sm">
+                  <div>
+                    <span class="txt-muted block">Passwords Run</span>
+                    <span id="crack-stat-tried" class="font-bold">0</span>
+                  </div>
+                  <div>
+                    <span class="txt-muted block">Speed (H/s)</span>
+                    <span id="crack-stat-speed" class="font-bold">0</span>
+                  </div>
+                  <div>
+                    <span class="txt-muted block">Est. Time Left</span>
+                    <span id="crack-stat-time" class="font-bold">--:--</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Start Cracking Button -->
+              <div class="flex gap-sm">
+                <button id="btn-start-crack" class="btn btn-danger flex-1">
+                  <i data-lucide="play"></i>
+                  <span>Launch Decryption</span>
+                </button>
+                <button id="btn-stop-crack" class="btn btn-outline-secondary" disabled>
+                  <span>Abort</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== SIEM LOG ANALYSIS & INCIDENT RESPONSE ==================== -->
+        <section id="tab-siem" class="tab-panel">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">SIEM Incident Response Panel</h2>
+              <p class="panel-subtitle">Audit continuous streaming event telemetry logs, identify attacks, and initiate hotfix mitigations.</p>
+            </div>
+          </div>
+
+          <div class="grid grid-2-1 gap-md">
+            <!-- Left Side: Live Log Stream Terminal (Splunk style) -->
+            <div class="card p-md glass-card flex flex-col justify-between" style="min-height: 480px;">
+              <div class="flex justify-between items-center mb-sm">
+                <h3 class="card-title"><i data-lucide="database" class="txt-cyan mr-xs"></i>Security Event Audit Logs</h3>
+                
+                <!-- Log Filters -->
+                <div class="flex gap-xs text-xs font-mono">
+                  <label class="flex items-center gap-xs cursor-pointer">
+                    <input type="checkbox" id="siem-filter-critical" checked> <span class="txt-rose">CRIT</span>
+                  </label>
+                  <label class="flex items-center gap-xs cursor-pointer ml-xs">
+                    <input type="checkbox" id="siem-filter-warning" checked> <span class="txt-warning">WARN</span>
+                  </label>
+                  <label class="flex items-center gap-xs cursor-pointer ml-xs">
+                    <input type="checkbox" id="siem-filter-info" checked> <span class="txt-cyan">INFO</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Console Splunk stream -->
+              <div class="terminal-shell flex-1 flex flex-col justify-between" style="min-height: 250px;">
+                <div class="terminal-header flex justify-between items-center">
+                  <div class="flex items-center">
+                    <div class="terminal-window-buttons"><span></span><span></span><span></span></div>
+                    <span class="terminal-title">splunk_agentd -f security_events.log</span>
+                  </div>
+                  <span class="font-mono text-xs txt-cyan" id="siem-rate-indicator">LOGS STREAMING [2/s]</span>
+                </div>
+                <div id="siem-log-stream" class="terminal-body scrollable font-mono text-xs flex-1">
+                  <!-- Streaming log records filled by siem.js -->
+                </div>
+              </div>
+              
+              <!-- Quick Log Search -->
+              <div class="flex gap-sm items-center mt-md">
+                <div class="input-group flex-1">
+                  <span class="input-addon font-mono text-xs">REGEX FILTER</span>
+                  <input type="text" id="siem-search-input" class="input font-mono text-xs" placeholder="Search logs (e.g. Brute Force)...">
+                </div>
+                <button id="btn-siem-clear" class="btn btn-outline-secondary text-xs font-mono py-sm">Clear Terminal</button>
+              </div>
+            </div>
+
+            <!-- Right Side: Threat Alerts & Mitigations list -->
+            <div class="card p-md glass-card flex flex-col justify-between" style="min-height: 480px;">
+              <div>
+                <h3 class="card-title mb-xs"><i data-lucide="alert-triangle" class="txt-warning mr-xs"></i>Active Threat Incidents</h3>
+                <p class="card-subtitle mb-md">Select response plans to secure the infrastructure and boost safety rating.</p>
+                
+                <!-- Incidents list -->
+                <div class="alert-incident-panel flex flex-col gap-sm">
+                  <!-- Live alert indicators -->
+                  <div class="alert-box alert-danger flex justify-between items-center" id="siem-alert-bruteforce">
+                    <div>
+                      <span class="alert-box-title">SSH Brute Force Attack</span>
+                      <p class="text-xs txt-muted mt-xs">Source: 203.0.113.88 → Port 22</p>
+                    </div>
+                    <button class="btn btn-danger text-xs py-xs" id="btn-mitigate-bruteforce">Apply IP Block</button>
+                  </div>
+
+                  <div class="alert-box alert-warning flex justify-between items-center" id="siem-alert-sqli">
+                    <div>
+                      <span class="alert-box-title">SQL Injection Detected</span>
+                      <p class="text-xs txt-muted mt-xs">Source: Web application forms</p>
+                    </div>
+                    <button class="btn btn-warning text-xs py-xs" id="btn-mitigate-sqli">Patch SQL Queries</button>
+                  </div>
+
+                  <div class="alert-box alert-warning flex justify-between items-center" id="siem-alert-xss">
+                    <div>
+                      <span class="alert-box-title">Stored XSS Vector Found</span>
+                      <p class="text-xs txt-muted mt-xs">Payload identified in Feedback Database</p>
+                    </div>
+                    <button class="btn btn-warning text-xs py-xs" id="btn-mitigate-xss">Apply HTML Sanitizer</button>
+                  </div>
+
+                  <div class="alert-box alert-danger flex justify-between items-center" id="siem-alert-weakpw">
+                    <div>
+                      <span class="alert-box-title">Leaked Credentials / Weak Hash</span>
+                      <p class="text-xs txt-muted mt-xs">Admin hash cracked using local MD5 dictionaries</p>
+                    </div>
+                    <button class="btn btn-danger text-xs py-xs" id="btn-mitigate-weakpw">Upgrade Storage Hash</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Mitigation stats and overall progress -->
+              <div class="mitigation-status-box border-t border-glass pt-sm mt-md font-mono text-xs">
+                <div class="flex justify-between items-center">
+                  <span>Mitigation Progress:</span>
+                  <strong id="siem-progress-percent">0% Secured</strong>
+                </div>
+                <div class="strength-meter-bar mt-xs">
+                  <div id="siem-mitigate-bar" class="strength-meter-fill bg-success" style="width: 0%;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== CLI TOOLS CONSOLE ==================== -->
+        <section id="tab-tools" class="tab-panel">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">Kali Web Terminal Simulator</h2>
+              <p class="panel-subtitle">Access virtual testing programs using a mock bash environment (nmap, whois, hydra, help).</p>
+            </div>
+          </div>
+
+          <div class="card p-md glass-card flex-1 flex flex-col justify-between" style="min-height: 480px;">
+            <div class="terminal-shell flex-1 flex flex-col justify-between">
+              <div class="terminal-header">
+                <div class="terminal-window-buttons"><span></span><span></span><span></span></div>
+                <span class="terminal-title">root@kali-virtual-sandbox:~</span>
+              </div>
+              <div id="cli-console-body" class="terminal-body scrollable font-mono text-xs flex-1">
+                <div class="terminal-welcome-text">
+                  <pre class="font-mono text-xs txt-green">
+  ____      _                 ____  _             ____
+ / ___|   _| |__   ___ _ __  / ___|(_)_ __ ___   |  _ \ _ __ ___
+| |  | | | | '_ \ / _ \ '__| \___ \| | '_ ` _ \  | |_) | '__/ _ \
+| |__| |_| | |_) |  __/ |     ___) | | | | | | | |  __/| | | (_) |
+ \____\__, |_.__/ \___|_|    |____/|_|_| |_| |_| |_|   |_|  \___/
+      |___/
+                  </pre>
+                  <p class="mt-sm">Welcome to Kali Linux Simulation Shell. Type <span class="txt-cyan">help</span> to view lists of utility tools.</p>
+                  <p class="txt-muted text-xs mt-xs">Tip: You can query 'nmap', 'whois', 'hydra', or 'cat' commands here.</p>
+                  <br>
+                </div>
+              </div>
+              <!-- Input Prompt -->
+              <div class="terminal-input-row font-mono text-xs border-t border-glass pt-xs mt-xs flex items-center">
+                <span class="terminal-prompt-prefix txt-cyan">root@kali:~# </span>
+                <input type="text" id="cli-shell-input" class="cli-input flex-1 font-mono text-xs ml-xs" placeholder="Type command here..." autofocus>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== AUDIT REPORTS GENERATOR ==================== -->
+        <section id="tab-reports" class="tab-panel">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">Cybersecurity Report Generator</h2>
+              <p class="panel-subtitle">Aggregate completed training logs, configure audit parameters, and print security portfolios.</p>
+            </div>
+          </div>
+
+          <div class="grid grid-2-1 gap-md">
+            <!-- Left Side: Interactive editable report parameters -->
+            <div class="card p-md glass-card flex flex-col justify-between" style="min-height: 480px;">
+              <div>
+                <h3 class="card-title mb-md"><i data-lucide="settings" class="txt-cyan mr-xs"></i>Report Metadata Customization</h3>
+                
+                <div class="form-group mb-sm">
+                  <label class="label text-xs">Client/Target Company Name</label>
+                  <input type="text" id="rep-company" class="input text-xs" value="SecureCorp Infrastructures, Inc.">
+                </div>
+
+                <div class="form-group mb-sm">
+                  <label class="label text-xs">Lead Penetration Tester / Analyst</label>
+                  <input type="text" id="rep-analyst" class="input text-xs" value="SecOps Certified Analyst #419">
+                </div>
+
+                <div class="form-group mb-md">
+                  <label class="label text-xs">Executive Summary / Auditor Notes</label>
+                  <textarea id="rep-notes" class="input text-xs" style="height: 120px; resize: none;">During the SecOps simulation assessment, we identified four critical security vectors spanning target scanning (Nmap port scanning), web application vulnerabilities (SQL Injection bypass and feedback-oriented Stored Cross-Site Scripting), password database risks (weak MD5 hashing and credential cracking), and SIEM log monitoring constraints. All issues were audited, exploited under controlled sandboxes, and successfully mitigated using modern secure coding practices.</textarea>
+                </div>
+
+                <!-- Session Progress Summary checklist -->
+                <div class="border-t border-glass pt-sm font-mono text-xs">
+                  <span class="font-bold txt-cyan mb-xs block">Discovered Vulnerabilities:</span>
+                  <div class="grid grid-2 gap-xs">
+                    <label class="flex items-center gap-xs">
+                      <input type="checkbox" id="rep-chk-scan" checked disabled> <span>Nmap Discovery (Port 80/22/3306)</span>
+                    </label>
+                    <label class="flex items-center gap-xs">
+                      <input type="checkbox" id="rep-chk-sqli" checked disabled> <span>SQL Injection Login Bypass</span>
+                    </label>
+                    <label class="flex items-center gap-xs">
+                      <input type="checkbox" id="rep-chk-xss" checked disabled> <span>Stored Feedback XSS Payload</span>
+                    </label>
+                    <label class="flex items-center gap-xs">
+                      <input type="checkbox" id="rep-chk-hash" checked disabled> <span>MD5 Weak Password Cracking</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Compile & Print actions -->
+              <div class="flex gap-sm mt-md">
+                <button id="btn-compile-report" class="btn btn-cyan flex-1">
+                  <i data-lucide="refresh-cw"></i>
+                  <span>Compile Audit Portfolio</span>
+                </button>
+                <button id="btn-print-report" class="btn btn-primary">
+                  <i data-lucide="printer"></i>
+                  <span>Print Portfolio (PDF)</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Right Side: Live printable report preview -->
+            <div class="card p-none glass-card flex flex-col justify-between scrollable" style="height: 480px; overflow-y: auto;">
+              <!-- Printable Document Sheet -->
+              <div class="report-document-sheet p-lg font-sans" id="report-preview-document">
+                <div class="report-print-header text-center mb-lg border-b pb-md">
+                  <h1 class="text-xl font-bold font-heading">PENTEST & SECURITY AUDIT SUMMARY</h1>
+                  <p class="font-mono text-xs text-muted mt-xs">CYBERSIM PRO SECURITY OPERATIONS CENTER</p>
+                </div>
+
+                <div class="grid grid-2 gap-sm font-mono text-xs mb-md border-b pb-sm">
+                  <div>
+                    <strong>Target System:</strong> <span>192.168.4.15</span><br>
+                    <strong>Company Audit:</strong> <span id="rep-preview-company">SecureCorp</span>
+                  </div>
+                  <div>
+                    <strong>Date Compiled:</strong> <span id="rep-preview-date">2026-06-18</span><br>
+                    <strong>Auditor ID:</strong> <span id="rep-preview-analyst">Analyst #419</span>
+                  </div>
+                </div>
+
+                <div class="mb-md">
+                  <h4 class="font-bold text-xs border-b pb-xs mb-xs uppercase">1. Executive Overview</h4>
+                  <p class="text-xs text-justify" id="rep-preview-notes-body" style="line-height: 1.5; color: #b2ccd6;">
+                    Loading auditor notes...
+                  </p>
+                </div>
+
+                <div class="mb-md">
+                  <h4 class="font-bold text-xs border-b pb-xs mb-xs uppercase">2. Vulnerability Findings & Mitigations</h4>
+                  <table class="report-table-findings font-mono text-2xs w-full text-left">
+                    <thead>
+                      <tr>
+                        <th>Lab Vector</th>
+                        <th>Risk</th>
+                        <th>Exploit Payload</th>
+                        <th>Mitigation Action</th>
+                      </tr>
+                    </thead>
+                    <tbody id="rep-preview-findings-body">
+                      <!-- Dynamically generated in reporting.js -->
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="text-center font-mono text-2xs text-muted border-t pt-sm mt-lg">
+                  *** CLASSIFIED: INTERNAL SEC-AUDIT MATERIAL ONLY ***
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+      </main>
+
+      <!-- Persistent AI Cyber Assistant Sidebar -->
+      <aside class="app-assistant closed" id="app-assistant-pane">
+        <div class="assistant-header flex justify-between items-center p-sm border-b border-glass bg-glass">
+          <div class="flex items-center gap-xs">
+            <div class="assistant-avatar">🤖</div>
+            <div>
+              <p class="assistant-title">AI Cyber Advisor</p>
+              <p class="assistant-subtitle">Contextual Intel Engine</p>
+            </div>
+          </div>
+          <button class="btn-icon p-xs text-xs btn-outline-cyan" id="btn-toggle-assistant" title="Close Advisor">
+            <i data-lucide="chevron-right"></i>
+          </button>
+        </div>
+
+        <!-- Scrollable chats -->
+        <div class="assistant-body scrollable p-sm flex-1 flex flex-col" id="assistant-chat-body">
+          <div class="chat-message chat-system">
+            <strong>System:</strong> Secure terminal sync successful. Active tab analysis connected.
+          </div>
+          
+          <div class="chat-message chat-assistant">
+            Hello Agent! I am your cyber advisory unit. I will guide you through the active security labs. Select a lab from the navigation sidebar or ask me a concept question!
+          </div>
+        </div>
+
+        <!-- Chat Input line -->
+        <div class="assistant-input-area p-sm border-t border-glass flex gap-xs bg-glass">
+          <input type="text" id="assistant-chat-input" class="input text-xs font-mono" placeholder="Ask details (e.g. what is SQLi?)...">
+          <button id="btn-assistant-send" class="btn btn-cyan text-xs px-sm py-xs">Send</button>
+        </div>
+      </aside>
+
+      <!-- Floating toggle assistant badge -->
+      <button class="floating-assistant-badge" id="btn-floating-assistant" title="Open AI Security Advisor">
+        <i data-lucide="bot"></i>
+        <span class="chat-badge-dot pulse-tag"></span>
+      </button>
+
+    </div>
+  </div>
+
+  <!-- Shared Data Store & Logic Modules -->
+  <script src="js/data.js"></script>
+  <script src="js/assistant.js"></script>
+  <script src="js/recon.js"></script>
+  <script src="js/webvuln.js"></script>
+  <script src="js/password.js"></script>
+  <script src="js/siem.js"></script>
+  <script src="js/tools.js"></script>
+  <script src="js/reporting.js"></script>
+  
+  <!-- Main Application Entry Orchestrator -->
+  <script src="js/app.js"></script>
+  
+  <script>
+    // Initialize Lucide icons on DOM render
+    document.addEventListener("DOMContentLoaded", () => {
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
