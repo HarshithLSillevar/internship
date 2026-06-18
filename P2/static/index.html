@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CyberGuard AI - Advanced Security Sandbox & SIEM Dashboard</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts Outfit & Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Chart.js for beautiful charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Custom styles -->
+  <link rel="stylesheet" href="styles.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cyberDark: '#0a0e17',
+            cyberCard: '#101625',
+            cyberCyan: '#00f2fe',
+            cyberBlue: '#4facfe',
+            cyberGreen: '#39ff14',
+            cyberOrange: '#ff9900',
+            cyberRed: '#ff3366',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-cyberDark min-h-screen grid-overlay relative flex">
+
+  <!-- Floating Glow Points -->
+  <div class="absolute top-10 left-10 w-72 h-72 bg-cyberBlue/10 rounded-full blur-[100px] pointer-events-none"></div>
+  <div class="absolute bottom-10 right-10 w-96 h-96 bg-cyberCyan/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+  <!-- Sidebar Navigation -->
+  <aside class="w-64 border-r border-cyberBlue/20 bg-cyberCard/80 backdrop-blur-xl flex flex-col z-10 shrink-0">
+    <div class="p-6 border-b border-cyberBlue/20 flex items-center gap-3">
+      <div class="p-2 bg-cyberCyan/15 rounded-lg border border-cyberCyan/40 text-cyberCyan">
+        <i data-lucide="shield-alert" class="w-6 h-6"></i>
+      </div>
+      <div>
+        <h1 class="font-extrabold text-lg tracking-wider text-white font-outfit">CYBERGUARD</h1>
+        <p class="text-xs text-cyberCyan font-semibold tracking-widest">AI SANDBOX</p>
+      </div>
+    </div>
+
+    <!-- Navigation links -->
+    <nav class="flex-1 p-4 space-y-2">
+      <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-text-muted hover:bg-cyberBlue/10 hover:text-white transition duration-200 sidebar-active">
+        <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+        <span>SIEM Dashboard</span>
+      </button>
+      <button onclick="switchTab('scan')" id="nav-scan" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-text-muted hover:bg-cyberBlue/10 hover:text-white transition duration-200">
+        <i data-lucide="scan" class="w-4 h-4"></i>
+        <span>Network Scanner</span>
+      </button>
+      <button onclick="switchTab('packets')" id="nav-packets" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-text-muted hover:bg-cyberBlue/10 hover:text-white transition duration-200">
+        <i data-lucide="network" class="w-4 h-4"></i>
+        <span>Packet Analyzer</span>
+      </button>
+      <button onclick="switchTab('chat')" id="nav-chat" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-text-muted hover:bg-cyberBlue/10 hover:text-white transition duration-200">
+        <i data-lucide="bot" class="w-4 h-4"></i>
+        <span>AI Lab Assistant</span>
+      </button>
+      <button onclick="switchTab('learning')" id="nav-learning" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-text-muted hover:bg-cyberBlue/10 hover:text-white transition duration-200">
+        <i data-lucide="graduation-cap" class="w-4 h-4"></i>
+        <span>Learning Center</span>
+      </button>
+    </nav>
+
+    <!-- Bottom user status info -->
+    <div class="p-4 border-t border-cyberBlue/20 bg-cyberDark/50">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="w-2.5 h-2.5 bg-cyberGreen rounded-full alert-pulse"></div>
+        <span class="text-xs font-semibold text-slate-300">Sandbox: Secure & Isolated</span>
+      </div>
+      <p class="text-[10px] text-slate-500">Perfect environment for security training.</p>
+    </div>
+  </aside>
+
+  <!-- Main Workspace -->
+  <main class="flex-1 flex flex-col min-w-0 z-10 overflow-y-auto">
+    <!-- Top System Status Header Bar -->
+    <header class="h-20 border-b border-cyberBlue/20 bg-cyberCard/40 backdrop-blur-md px-8 flex items-center justify-between shrink-0">
+      <div class="flex items-center gap-4">
+        <h2 id="page-title" class="font-outfit text-xl font-bold tracking-tight text-white">SIEM Security Operations Center</h2>
+      </div>
+
+      <!-- Live metrics -->
+      <div class="flex items-center gap-8">
+        <div class="hidden md:flex flex-col text-right">
+          <span class="text-[10px] text-slate-400 font-semibold tracking-wider uppercase">Threat Index</span>
+          <span id="threat-indicator" class="text-xs font-bold text-cyberGreen">NORMAL (SECURE)</span>
+        </div>
+        <div class="hidden md:flex flex-col text-right">
+          <span class="text-[10px] text-slate-400 font-semibold tracking-wider uppercase">Active Alerts</span>
+          <span id="active-alert-counter" class="text-xs font-bold text-cyberRed">0 Incidents</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="p-2 rounded-lg bg-cyberCard border border-cyberBlue/30 text-white flex items-center gap-2">
+            <i data-lucide="cpu" class="w-4 h-4 text-cyberCyan"></i>
+            <span class="text-xs font-mono">CPU: 12%</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Page Content Container -->
+    <div class="flex-1 p-8 space-y-8">
+
+      <!-- ================= TAB 1: SIEM DASHBOARD ================= -->
+      <div id="tab-dashboard" class="space-y-8">
+        <!-- Top Metrics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div class="glass-panel p-6 flex items-center justify-between">
+            <div>
+              <span class="text-xs text-slate-400 font-medium uppercase tracking-wider block">Total Log Events</span>
+              <span class="text-2xl font-bold text-white mt-1 block">7 Event Rows</span>
+            </div>
+            <div class="p-3 bg-cyberCyan/10 border border-cyberCyan/30 text-cyberCyan rounded-lg">
+              <i data-lucide="database" class="w-6 h-6"></i>
+            </div>
+          </div>
+          <div class="glass-panel p-6 flex items-center justify-between">
+            <div>
+              <span class="text-xs text-slate-400 font-medium uppercase tracking-wider block">Critical Alerts</span>
+              <span id="siem-critical-count" class="text-2xl font-bold text-cyberRed mt-1 block">3 Alerts</span>
+            </div>
+            <div class="p-3 bg-cyberRed/10 border border-cyberRed/30 text-cyberRed rounded-lg">
+              <i data-lucide="shield-alert" class="w-6 h-6"></i>
+            </div>
+          </div>
+          <div class="glass-panel p-6 flex items-center justify-between">
+            <div>
+              <span class="text-xs text-slate-400 font-medium uppercase tracking-wider block">Warning Events</span>
+              <span id="siem-warning-count" class="text-2xl font-bold text-cyberOrange mt-1 block">2 Alerts</span>
+            </div>
+            <div class="p-3 bg-cyberOrange/10 border border-cyberOrange/30 text-cyberOrange rounded-lg">
+              <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+            </div>
+          </div>
+          <div class="glass-panel p-6 flex items-center justify-between">
+            <div>
+              <span class="text-xs text-slate-400 font-medium uppercase tracking-wider block">Traffic Status</span>
+              <span class="text-2xl font-bold text-cyberGreen mt-1 block">Simulated</span>
+            </div>
+            <div class="p-3 bg-cyberGreen/10 border border-cyberGreen/30 text-cyberGreen rounded-lg">
+              <i data-lucide="activity" class="w-6 h-6"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- SIEM Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="glass-panel p-6 relative">
+            <h3 class="text-sm font-semibold text-white tracking-wide uppercase mb-4 flex items-center gap-2">
+              <i data-lucide="bar-chart-3" class="w-4 h-4 text-cyberCyan"></i> Event Severity Breakdown
+            </h3>
+            <div class="h-64 flex justify-center items-center">
+              <canvas id="siemSeverityChart"></canvas>
+            </div>
+          </div>
+
+          <div class="glass-panel p-6">
+            <h3 class="text-sm font-semibold text-white tracking-wide uppercase mb-4 flex items-center gap-2">
+              <i data-lucide="trending-up" class="w-4 h-4 text-cyberBlue"></i> Security Threats Timeline
+            </h3>
+            <div class="h-64 flex justify-center items-center">
+              <canvas id="siemTimelineChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- SIEM Live Log Event Viewer (Splunk-like) -->
+        <div class="glass-panel p-6">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+            <div>
+              <h3 class="text-base font-bold text-white">Live Event Log Feed</h3>
+              <p class="text-xs text-slate-400">Search and filter active network and security system logs</p>
+            </div>
+
+            <!-- Search and severity filters -->
+            <div class="flex items-center gap-3">
+              <div class="relative">
+                <input type="text" id="siem-search" oninput="loadSiemLogs()" placeholder="Search logs (IP, event...)" class="bg-cyberCard border border-cyberBlue/30 text-white placeholder-slate-500 text-xs rounded-lg pl-9 pr-4 py-2 w-64 focus:outline-none focus:border-cyberCyan transition">
+                <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5"></i>
+              </div>
+              <select id="siem-severity-filter" onchange="loadSiemLogs()" class="bg-cyberCard border border-cyberBlue/30 text-white text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-cyberCyan transition">
+                <option value="All">All Severities</option>
+                <option value="Info">Info</option>
+                <option value="Warning">Warning</option>
+                <option value="Critical">Critical</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Log list -->
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead>
+                <tr class="border-b border-cyberBlue/20 text-slate-400 uppercase font-semibold">
+                  <th class="py-3 px-4">Timestamp</th>
+                  <th class="py-3 px-4">Source IP</th>
+                  <th class="py-3 px-4">Destination IP</th>
+                  <th class="py-3 px-4">Event Name</th>
+                  <th class="py-3 px-4">Severity</th>
+                  <th class="py-3 px-4">Details</th>
+                </tr>
+              </thead>
+              <tbody id="siem-log-table-body" class="divide-y divide-cyberBlue/10 text-slate-300">
+                <!-- Injected via JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ================= TAB 2: NETWORK SCANNER ================= -->
+      <div id="tab-scan" class="hidden space-y-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          <!-- Scan Controller Input Panel -->
+          <div class="glass-panel p-6 space-y-6">
+            <div>
+              <h3 class="text-base font-bold text-white mb-1">Simulated Network Scanning Lab</h3>
+              <p class="text-xs text-slate-400">Scan devices safely within this sandbox model.</p>
+            </div>
+
+            <!-- Configuration input fields -->
+            <div class="space-y-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Target IP/Domain</label>
+                <input type="text" id="scan-target" value="192.168.1.1" placeholder="e.g. 192.168.1.1 or target.local" class="w-full bg-cyberCard border border-cyberBlue/30 text-white text-sm rounded-lg px-4 py-3 focus:outline-none focus:border-cyberCyan transition font-mono">
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Scan Mode Profile</label>
+                <div class="grid grid-cols-1 gap-2">
+                  <label class="p-3 bg-cyberCard/60 border border-cyberBlue/20 rounded-lg cursor-pointer flex items-center gap-3 hover:bg-cyberBlue/10 transition">
+                    <input type="radio" name="scan-type" value="quick" checked class="accent-cyberCyan">
+                    <div>
+                      <span class="text-xs font-bold text-white block">Quick Port Scan</span>
+                      <span class="text-[10px] text-slate-400">Scans top 3 standard ports. Fast, normal risk.</span>
+                    </div>
+                  </label>
+                  <label class="p-3 bg-cyberCard/60 border border-cyberBlue/20 rounded-lg cursor-pointer flex items-center gap-3 hover:bg-cyberBlue/10 transition">
+                    <input type="radio" name="scan-type" value="stealth" class="accent-cyberCyan">
+                    <div>
+                      <span class="text-xs font-bold text-white block">Stealth SYN Scan</span>
+                      <span class="text-[10px] text-slate-400">Uses half-open connections to bypass firewalls.</span>
+                    </div>
+                  </label>
+                  <label class="p-3 bg-cyberCard/60 border border-cyberBlue/20 rounded-lg cursor-pointer flex items-center gap-3 hover:bg-cyberBlue/10 transition">
+                    <input type="radio" name="scan-type" value="vuln" class="accent-cyberCyan">
+                    <div>
+                      <span class="text-xs font-bold text-white block">Vulnerability Scan (-sV --script)</span>
+                      <span class="text-[10px] text-slate-400">Performs service version detection and checks CVE databases.</span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <button onclick="startSimulatedScan()" class="w-full py-3 bg-gradient-to-r from-cyberBlue to-cyberCyan text-cyberDark font-bold rounded-lg text-sm tracking-wider uppercase flex items-center justify-center gap-2 hover:opacity-90 transition">
+                <i data-lucide="play" class="w-4 h-4"></i>
+                <span>Launch Scan</span>
+              </button>
+            </div>
+
+            <!-- Sandbox Notice -->
+            <div class="p-4 bg-cyberBlue/5 border border-cyberBlue/20 rounded-lg">
+              <span class="text-xs font-bold text-cyberCyan block mb-1 flex items-center gap-1.5">
+                <i data-lucide="info" class="w-3.5 h-3.5"></i> Safe Sandbox Policy
+              </span>
+              <p class="text-[10px] text-slate-400 leading-relaxed">
+                This is a realistic, safe environment simulating Nmap command output. It protects you from targeting servers without authorization.
+              </p>
+            </div>
+          </div>
+
+          <!-- Nmap CLI Terminal & Live Output -->
+          <div class="lg:col-span-2 flex flex-col gap-6">
+            <div class="glass-panel p-6 flex-1 flex flex-col">
+              <div class="flex items-center justify-between border-b border-cyberBlue/20 pb-3 mb-4">
+                <span class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                  <i data-lucide="terminal" class="w-4 h-4 text-cyberCyan"></i> Terminal Console Output
+                </span>
+                <span class="text-xs font-mono text-slate-500">nmap -sS -p-</span>
+              </div>
+              <!-- Simulated terminal output area -->
+              <div class="flex-1 min-h-[200px] cyber-terminal rounded-lg p-4 font-mono text-xs text-cyberCyan/90 overflow-y-auto max-h-[300px]" id="scan-terminal-output">
+                Waiting for target input and launch command...
+              </div>
+            </div>
+
+            <!-- Analyzed Ports Table -->
+            <div class="glass-panel p-6">
+              <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
+                <i data-lucide="list-filter" class="w-4 h-4 text-cyberBlue"></i> Discovered Ports & Services
+              </h3>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                  <thead>
+                    <tr class="border-b border-cyberBlue/20 text-slate-400 uppercase font-semibold">
+                      <th class="py-2.5 px-3">Port</th>
+                      <th class="py-2.5 px-3">Service</th>
+                      <th class="py-2.5 px-3">State</th>
+                      <th class="py-2.5 px-3">Risk Level</th>
+                      <th class="py-2.5 px-3">CVE Reference</th>
+                      <th class="py-2.5 px-3">Explanation</th>
+                    </tr>
+                  </thead>
+                  <tbody id="scan-ports-table-body" class="text-slate-300">
+                    <tr>
+                      <td colspan="6" class="py-6 text-center text-slate-500">Run a scan above to visualize active open ports.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ================= TAB 3: PACKET ANALYZER ================= -->
+      <div id="tab-packets" class="hidden space-y-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          <!-- Packet Stream Scenario Selector & Packet List -->
+          <div class="glass-panel p-6 flex flex-col h-[600px]">
+            <div class="mb-4">
+              <h3 class="text-base font-bold text-white mb-1">Packet Stream Analyzer</h3>
+              <p class="text-xs text-slate-400">Select packet scenario logs and analyze header flags.</p>
+            </div>
+
+            <!-- Scenario switch drop-down -->
+            <div class="mb-4">
+              <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-2">Scenario Lab Type</label>
+              <select id="packet-scenario-select" onchange="loadPacketScenario()" class="w-full bg-cyberCard border border-cyberBlue/30 text-white text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-cyberCyan transition">
+                <option value="http_clear">HTTP Plaintext Login Sniffing</option>
+                <option value="syn_flood">SYN Flood (DDoS Attack Pattern)</option>
+                <option value="dns_anomaly">DNS Tunneling Data Exfiltration</option>
+              </select>
+            </div>
+
+            <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-2">Captured Frames</label>
+            <!-- Packet list container -->
+            <div class="flex-1 overflow-y-auto space-y-2" id="packet-list">
+              <!-- Injected dynamically -->
+            </div>
+          </div>
+
+          <!-- Packet Decoders View -->
+          <div class="lg:col-span-2 flex flex-col gap-6 h-[600px]">
+            <!-- Packet Headers Inspector -->
+            <div class="glass-panel p-6 flex-1 overflow-y-auto">
+              <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
+                <i data-lucide="binary" class="w-4 h-4 text-cyberCyan"></i> Layer Breakdown & Headers
+              </h3>
+              
+              <div id="packet-detail-instructions" class="text-center py-12 text-slate-500 text-xs">
+                Select a frame from the capture stream panel to inspect header segments.
+              </div>
+
+              <!-- Header Accordions -->
+              <div id="packet-headers-container" class="space-y-3 hidden">
+                <!-- Link Layer -->
+                <div class="border border-cyberBlue/20 rounded-lg overflow-hidden">
+                  <button class="w-full px-4 py-3 bg-cyberCard/60 flex items-center justify-between text-xs font-semibold text-slate-200" onclick="toggleAccordion('hdr-eth')">
+                    <span>Frame Layer: Ethernet II (MAC Address Structure)</span>
+                    <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400"></i>
+                  </button>
+                  <div id="hdr-eth" class="p-4 border-t border-cyberBlue/10 bg-cyberDark/40 text-xs font-mono space-y-1 text-slate-300">
+                    <div>Destination MAC: <span id="eth-dst" class="text-white"></span></div>
+                    <div>Source MAC: <span id="eth-src" class="text-white"></span></div>
+                    <div>Payload Type: <span id="eth-type" class="text-cyberCyan"></span></div>
+                  </div>
+                </div>
+
+                <!-- Network Layer -->
+                <div class="border border-cyberBlue/20 rounded-lg overflow-hidden">
+                  <button class="w-full px-4 py-3 bg-cyberCard/60 flex items-center justify-between text-xs font-semibold text-slate-200" onclick="toggleAccordion('hdr-ip')">
+                    <span>Internet Protocol Layer (IP Routing Headers)</span>
+                    <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400"></i>
+                  </button>
+                  <div id="hdr-ip" class="p-4 border-t border-cyberBlue/10 bg-cyberDark/40 text-xs font-mono space-y-1 text-slate-300">
+                    <div class="grid grid-cols-2 gap-2">
+                      <div>IP Version: <span id="ip-ver" class="text-white"></span></div>
+                      <div>Header Length: <span id="ip-hdrlen" class="text-white"></span></div>
+                      <div>Type of Service: <span id="ip-tos" class="text-white"></span></div>
+                      <div>Time to Live (TTL): <span id="ip-ttl" class="text-white"></span></div>
+                      <div>Protocol Identifier: <span id="ip-proto" class="text-cyberCyan"></span></div>
+                    </div>
+                    <div class="border-t border-cyberBlue/10 mt-2 pt-2">
+                      <div>Source IP Address: <span id="ip-src" class="text-cyberGreen font-bold"></span></div>
+                      <div>Destination IP Address: <span id="ip-dst" class="text-cyberRed font-bold"></span></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Transport Layer (TCP/UDP) -->
+                <div class="border border-cyberBlue/20 rounded-lg overflow-hidden">
+                  <button class="w-full px-4 py-3 bg-cyberCard/60 flex items-center justify-between text-xs font-semibold text-slate-200" onclick="toggleAccordion('hdr-transport')">
+                    <span id="transport-title">Transport Protocol Layer</span>
+                    <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400"></i>
+                  </button>
+                  <div id="hdr-transport" class="p-4 border-t border-cyberBlue/10 bg-cyberDark/40 text-xs font-mono space-y-1 text-slate-300">
+                    <div class="grid grid-cols-2 gap-2">
+                      <div>Source Port: <span id="port-src" class="text-white"></span></div>
+                      <div>Destination Port: <span id="port-dst" class="text-white"></span></div>
+                    </div>
+                    <div id="tcp-flags-container" class="border-t border-cyberBlue/10 mt-2 pt-2 space-y-1">
+                      <div class="font-bold text-slate-400">TCP Handshake Flags:</div>
+                      <div class="grid grid-cols-3 gap-2 text-center text-[10px] mt-1">
+                        <div id="flag-syn" class="py-1 px-2 border rounded">SYN</div>
+                        <div id="flag-ack" class="py-1 px-2 border rounded">ACK</div>
+                        <div id="flag-psh" class="py-1 px-2 border rounded">PSH</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Application Data / Payload -->
+                <div class="border border-cyberBlue/20 rounded-lg overflow-hidden">
+                  <button class="w-full px-4 py-3 bg-cyberCard/60 flex items-center justify-between text-xs font-semibold text-slate-200" onclick="toggleAccordion('hdr-payload')">
+                    <span>Application Layer (ASCII / Hex Payload Data)</span>
+                    <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400"></i>
+                  </button>
+                  <div id="hdr-payload" class="p-4 border-t border-cyberBlue/10 bg-cyberDark/40 text-xs font-mono space-y-1 text-slate-300">
+                    <textarea id="payload-raw" readonly class="w-full h-24 bg-cyberDark/80 border border-cyberBlue/20 text-cyberGreen p-2 rounded text-xs focus:outline-none resize-none font-mono"></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Educational / Threat AI Interpretation -->
+            <div class="glass-panel p-6 h-48 flex flex-col">
+              <h3 class="text-xs font-bold text-white uppercase tracking-wider mb-2 flex items-center gap-2">
+                <i data-lucide="eye" class="w-4 h-4 text-cyberBlue"></i> Expert Anomaly Explanation
+              </h3>
+              <div class="flex-1 bg-cyberBlue/5 border border-cyberBlue/10 rounded-lg p-3 overflow-y-auto text-xs leading-relaxed text-slate-300" id="packet-interpretation">
+                No packet selected. Use the left panel stream flow logs to highlight a frame.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ================= TAB 4: AI LAB ASSISTANT ================= -->
+      <div id="tab-chat" class="hidden glass-panel flex flex-col h-[600px] overflow-hidden">
+        <!-- Chat header -->
+        <div class="p-6 border-b border-cyberBlue/20 flex items-center justify-between bg-cyberCard/40">
+          <div class="flex items-center gap-3">
+            <div class="p-2.5 bg-cyberCyan/10 border border-cyberCyan/30 text-cyberCyan rounded-lg">
+              <i data-lucide="bot" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-white">AI Security Lab Assistant</h3>
+              <p class="text-xs text-slate-400">Ask about Nmap scan results, Wireshark packet headers, protocols or threats.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat history area -->
+        <div class="flex-1 p-6 overflow-y-auto space-y-4 font-outfit" id="chat-messages">
+          <div class="flex gap-3 max-w-[80%]">
+            <div class="w-8 h-8 rounded-full bg-cyberBlue/20 border border-cyberBlue/40 text-cyberBlue flex items-center justify-center shrink-0">
+              <i data-lucide="bot" class="w-4 h-4"></i>
+            </div>
+            <div class="p-4 bg-cyberCard border border-cyberBlue/20 rounded-2xl rounded-tl-none text-xs text-slate-200 leading-relaxed">
+              Hello! I am your interactive security assistant. Ask me questions such as:
+              <ul class="list-disc list-inside mt-2 space-y-1 text-slate-400">
+                <li>What does the TCP three-way handshake do?</li>
+                <li>How does Nmap check if a port is open?</li>
+                <li>Why is plain text transmission over HTTP bad?</li>
+                <li>What is a DNS Tunneling attack?</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat Input Panel -->
+        <div class="p-4 border-t border-cyberBlue/20 bg-cyberCard/45">
+          <form onsubmit="sendChatMessage(event)" class="flex gap-3">
+            <input type="text" id="chat-input" placeholder="Type your security question here (e.g. 'How does a SYN flood work?')..." class="flex-1 bg-cyberDark border border-cyberBlue/30 text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-cyberCyan transition">
+            <button type="submit" class="px-6 bg-gradient-to-r from-cyberBlue to-cyberCyan text-cyberDark font-bold rounded-xl text-xs tracking-wider uppercase hover:opacity-90 transition flex items-center gap-2">
+              <span>Ask</span>
+              <i data-lucide="send" class="w-3.5 h-3.5"></i>
+            </button>
+          </form>
+        </div>
+      </div>
+
+
+      <!-- ================= TAB 5: LEARNING CENTER ================= -->
+      <div id="tab-learning" class="hidden space-y-8">
+        
+        <!-- Interactive Terminology Dictionary -->
+        <div class="glass-panel p-6">
+          <div class="mb-6">
+            <h3 class="text-base font-bold text-white mb-1">Interactive Cybersecurity Dictionary</h3>
+            <p class="text-xs text-slate-400 font-medium">Quick reference terminology cheatsheet covering 20 core security concepts.</p>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="learning-terms-container">
+            <!-- Injected dynamically via JS -->
+          </div>
+        </div>
+
+        <!-- Tutorials and Guides -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2 glass-panel p-6 space-y-4">
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <i data-lucide="book-open" class="w-4 h-4 text-cyberCyan"></i> Active Walkthrough Tutorial
+            </h3>
+
+            <!-- Tutorial Select options -->
+            <div class="flex gap-3">
+              <button onclick="selectTutorial('intro')" id="btn-tut-intro" class="px-4 py-2 border border-cyberBlue/20 bg-cyberBlue/10 text-xs font-semibold rounded-lg text-white">Introduction</button>
+              <button onclick="selectTutorial('nmap')" id="btn-tut-nmap" class="px-4 py-2 border border-cyberBlue/20 bg-cyberCard text-xs font-semibold rounded-lg text-slate-400">Scanning Lab</button>
+              <button onclick="selectTutorial('wireshark')" id="btn-tut-wireshark" class="px-4 py-2 border border-cyberBlue/20 bg-cyberCard text-xs font-semibold rounded-lg text-slate-400">Packet Lab</button>
+            </div>
+
+            <!-- Tutorial Steps -->
+            <div class="p-6 bg-cyberDark/60 border border-cyberBlue/10 rounded-lg space-y-4" id="tutorial-content">
+              <!-- Dynamically structured tutorial text -->
+            </div>
+          </div>
+
+          <!-- Security Quiz Widget -->
+          <div class="glass-panel p-6 flex flex-col justify-between">
+            <div>
+              <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
+                <i data-lucide="help-circle" class="w-4 h-4 text-cyberOrange"></i> Knowledge Assessment Quiz
+              </h3>
+              
+              <div class="space-y-4" id="quiz-container">
+                <span class="text-xs text-slate-400 font-semibold block" id="quiz-question-num">Question 1 of 3</span>
+                <p class="text-xs font-semibold text-slate-200" id="quiz-question-text">Loading question...</p>
+                
+                <div class="space-y-2" id="quiz-options">
+                  <!-- Injected via Javascript -->
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-6 border-t border-cyberBlue/10 pt-4 flex justify-between items-center">
+              <span id="quiz-feedback" class="text-xs font-semibold"></span>
+              <button onclick="nextQuizQuestion()" id="quiz-next-btn" class="px-4 py-2 bg-cyberCard border border-cyberBlue/20 hover:bg-cyberBlue/10 text-white rounded-lg text-[10px] font-bold uppercase transition">Next</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Main script -->
+  <script src="app.js"></script>
+</body>
+</html>

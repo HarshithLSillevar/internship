@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cyber Operations Center | Interactive SecOps Lab</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div id="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-icon">C</div>
+        <div class="logo-text">
+          <h1>CYBER LABS</h1>
+          <p>Security Operations</p>
+        </div>
+      </div>
+      
+      <nav class="nav-menu">
+        <li class="nav-item active" data-tab="soc">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+          SOC Dashboard
+        </li>
+        <li class="nav-item" data-tab="recon">
+          <svg viewBox="0 0 24 24"><polyline points="4 17 10 11 12 13 18 7"/><polyline points="12 7 18 7 18 13"/></svg>
+          Recon Terminal
+        </li>
+        <li class="nav-item" data-tab="wireshark">
+          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          Wireshark Packet
+        </li>
+        <li class="nav-item" data-tab="password">
+          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Password Hardener
+        </li>
+        <li class="nav-item" data-tab="glossary">
+          <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5v-15z"/></svg>
+          Glossary & Quiz
+        </li>
+        <li class="nav-item" data-tab="report">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Report Generator
+        </li>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <p>SecOps Lab Engine v2.4</p>
+        <p style="margin-top: 4px; font-family: monospace; font-size: 0.65rem;">PORT STATUS: LISTEN</p>
+      </div>
+    </aside>
+    
+    <!-- Main Dashboard Body -->
+    <main id="main-content">
+      
+      <!-- Top Bar Status Indicators -->
+      <header id="topbar">
+        <div class="system-status" id="sys-status-indicator">
+          <div class="status-dot"></div>
+          <span id="sys-status-text">SECURE: SYSTEM STATUS NORMAL</span>
+        </div>
+        
+        <div class="topbar-info">
+          <div class="info-item">TARGET HOST: <span id="current-target-ip">10.0.8.45</span></div>
+          <div class="info-item">LOGGED AS: <span>analyst_sec_01</span></div>
+          <div class="info-item">TIME: <span id="live-clock">23:45:57</span></div>
+        </div>
+      </header>
+      
+      <!-- TAB 1: SOC DASHBOARD -->
+      <section id="tab-soc" class="tab-view active">
+        <!-- Stat Row -->
+        <div class="soc-stats">
+          <div class="stat-widget critical">
+            <div class="stat-icon">☣</div>
+            <div class="stat-info">
+              <div class="stat-value" id="count-critical">4</div>
+              <div class="stat-label">Critical</div>
+            </div>
+          </div>
+          <div class="stat-widget high">
+            <div class="stat-icon">⚠</div>
+            <div class="stat-info">
+              <div class="stat-value" id="count-high">12</div>
+              <div class="stat-label">High Alerts</div>
+            </div>
+          </div>
+          <div class="stat-widget medium">
+            <div class="stat-icon">⚡</div>
+            <div class="stat-info">
+              <div class="stat-value" id="count-medium">22</div>
+              <div class="stat-label">Medium Alerts</div>
+            </div>
+          </div>
+          <div class="stat-widget low">
+            <div class="stat-icon">✓</div>
+            <div class="stat-info">
+              <div class="stat-value" id="count-low">45</div>
+              <div class="stat-label">System Logs</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Dashboard Grid -->
+        <div class="grid-2">
+          <!-- Left Column: Chart & Feed -->
+          <div style="display: flex; flex-direction: column; gap: 24px;">
+            <!-- Alert Trend Card -->
+            <div class="card">
+              <h2 class="card-title">
+                <svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                Alert Frequencies (Last 7 Days)
+              </h2>
+              <div class="chart-container">
+                <div class="chart-bar-wrap">
+                  <div class="chart-bar-value">12</div>
+                  <div class="chart-bar" style="height: 25%; background: var(--info);"></div>
+                  <div class="chart-bar-label">Mon</div>
+                </div>
+                <div class="chart-bar-wrap">
+                  <div class="chart-bar-value">18</div>
+                  <div class="chart-bar" style="height: 38%; background: var(--info);"></div>
+                  <div class="chart-bar-label">Tue</div>
+                </div>
+                <div class="chart-bar-wrap">
+                  <div class="chart-bar-value">45</div>
+                  <div class="chart-bar" style="height: 90%; background: var(--critical);"></div>
+                  <div class="chart-bar-label">Wed</div>
+                </div>
+                <div class="chart-bar-wrap">
+                  <div class="chart-bar-value">28</div>
+                  <div class="chart-bar" style="height: 58%; background: var(--high);"></div>
+                  <div class="chart-bar-label">Thu</div>
+                </div>
+                <div class="chart-bar-wrap">
+                  <div class="chart-bar-value">15</div>
+                  <div class="chart-bar" style="height: 32%; background: var(--info);"></div>
+                  <div class="chart-bar-label">Fri</div>
+                </div>
+                <div class="chart-bar-wrap">
+                  <div class="chart-bar-value">8</div>
+                  <div class="chart-bar" style="height: 18%; background: var(--low);"></div>
+                  <div class="chart-bar-label">Sat</div>
+                </div>
+                <div class="chart-bar-wrap">
+                  <div class="chart-bar-value">22</div>
+                  <div class="chart-bar" style="height: 48%; background: var(--medium);"></div>
+                  <div class="chart-bar-label">Sun</div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Live SIEM Logs -->
+            <div class="card" style="flex-grow: 1;">
+              <h2 class="card-title">
+                <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                SIEM Incident Stream
+              </h2>
+              <div class="alert-feed" id="siem-alert-feed">
+                <!-- Log entries will be populated by JS -->
+              </div>
+            </div>
+          </div>
+          
+          <!-- Right Column: Details & Actions -->
+          <div style="display: flex; flex-direction: column; gap: 24px;">
+            <!-- Investigation Desk -->
+            <div class="card" style="flex-grow: 1;">
+              <h2 class="card-title">
+                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                Incident Investigation
+              </h2>
+              <div class="soc-incident-panel">
+                <div class="incident-details" id="incident-details-box">
+                  <p style="color: var(--text-muted); font-style: italic;">Select an alert from the SIEM stream to analyze payload data and coordinate incident mitigation options...</p>
+                </div>
+                <div class="soc-actions">
+                  <button class="soc-action-btn btn-block-ip" id="btn-block-ip" disabled>Block Source IP</button>
+                  <button class="soc-action-btn btn-isolate-host" id="btn-isolate-host" disabled>Isolate Victim Host</button>
+                  <button class="soc-action-btn btn-resolve" id="btn-resolve-alert" disabled>Mark Incident Resolved</button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Firewall Panel -->
+            <div class="card">
+              <h2 class="card-title">
+                <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                Active Firewall Rules (iptables)
+              </h2>
+              <div class="firewall-log-box" id="firewall-rules-list">
+                <!-- Firewall list populated by JS -->
+                <div class="firewall-rule" style="color: var(--text-muted); font-style: italic;">No active blocks. Firewall policies are default ACCEPT.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- TAB 2: RECONNAISSANCE TERMINAL -->
+      <section id="tab-recon" class="tab-view">
+        <div class="card" style="margin-bottom: 24px;">
+          <h2 class="card-title">
+            <svg viewBox="0 0 24 24"><polyline points="4 17 10 11 12 13 18 7"/><polyline points="12 7 18 7 18 13"/></svg>
+            Command Line Active Reconnaissance Simulator
+          </h2>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
+            Simulate running vulnerability scanning and footprinting tools on a mock destination environment (<span style="color: var(--primary); font-family: monospace;">10.0.8.45</span>). Type <span style="font-family: monospace; color: var(--primary);">help</span> to view available terminal command options.
+          </p>
+          
+          <div class="terminal-window">
+            <div class="terminal-header">
+              <div class="terminal-title">
+                <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--terminal-text); box-shadow: 0 0 8px var(--terminal-text);"></span>
+                bash -- analyst@secops-terminal:~
+              </div>
+              <div class="terminal-controls">
+                <span class="term-dot"></span>
+                <span class="term-dot yellow"></span>
+                <span class="term-dot green"></span>
+              </div>
+            </div>
+            <div class="terminal-body" id="term-body">
+              <div class="term-line">SecOps Console OS v1.0.8-kali (tty1)</div>
+              <div class="term-line">Initialize active host scanning procedures on safe simulation environments.</div>
+              <div class="term-line">Type "help" for interactive guidance.</div>
+              <div class="term-line"></div>
+              
+              <div class="term-input-line">
+                <span class="term-prompt">analyst@secops:~$</span>
+                <input type="text" class="term-input" id="terminal-input" autofocus autocomplete="off" spellcheck="false">
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Flags Reference Table -->
+        <div class="card">
+          <h2 class="card-title">
+            <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5v-15z"/></svg>
+            Interactive Port Scan Reference Card
+          </h2>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">Click on a command below to copy it directly into your simulation terminal console above.</p>
+          
+          <table class="flag-table">
+            <thead>
+              <tr>
+                <th>Command Type</th>
+                <th>CLI Snippet (Click to Prefill)</th>
+                <th>Function Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Nmap TCP Syn Scan</strong></td>
+                <td><code class="flag-badge" style="cursor: pointer;" onclick="prefillTerminal('nmap -sS -p 80,443,8080 10.0.8.45')">nmap -sS -p 80,443,8080 10.0.8.45</code></td>
+                <td>Perform stealthy TCP SYN port scan against ports 80, 443, and 8080.</td>
+              </tr>
+              <tr>
+                <td><strong>Nmap Service Version Check</strong></td>
+                <td><code class="flag-badge" style="cursor: pointer;" onclick="prefillTerminal('nmap -sV -O 10.0.8.45')">nmap -sV -O 10.0.8.45</code></td>
+                <td>Determine operating system footprint and service software version strings.</td>
+              </tr>
+              <tr>
+                <td><strong>Nmap Full Scan</strong></td>
+                <td><code class="flag-badge" style="cursor: pointer;" onclick="prefillTerminal('nmap -A -p- 10.0.8.45')">nmap -A -p- 10.0.8.45</code></td>
+                <td>Aggressive comprehensive scan (OS detection, version scanning, script scanning, traceroute) for all ports.</td>
+              </tr>
+              <tr>
+                <td><strong>Nikto Vulnerability Scan</strong></td>
+                <td><code class="flag-badge" style="cursor: pointer;" onclick="prefillTerminal('nikto -h http://10.0.8.45')">nikto -h http://10.0.8.45</code></td>
+                <td>Assess web servers for outdated scripts, default config directories, and CGI items.</td>
+              </tr>
+              <tr>
+                <td><strong>Nikto Custom Port Scan</strong></td>
+                <td><code class="flag-badge" style="cursor: pointer;" onclick="prefillTerminal('nikto -h http://10.0.8.45 -p 8080')">nikto -h http://10.0.8.45 -p 8080</code></td>
+                <td>Run Nikto vulnerability scanning operations specifically targeted to port 8080.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+      
+      <!-- TAB 3: WIRESHARK PACKET ANALYZER -->
+      <section id="tab-wireshark" class="tab-view">
+        <div class="card" style="margin-bottom: 24px;">
+          <h2 class="card-title">
+            <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            Wireshark Packet Stream Analyzer & Decryptor
+          </h2>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
+            Analyze raw traffic captures between internal subnets. Toggle target packets to drill down into structural layers (IP/TCP headers) and read hex payload dumps.
+          </p>
+          
+          <div class="wireshark-container">
+            <!-- Wireshark Control/Filters Toolbar -->
+            <div class="wireshark-toolbar">
+              <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Load Session Stream:</span>
+              <button class="wireshark-btn active-ws" onclick="loadPacketStream('auth')">HTTP Login Credentials Capture</button>
+              <button class="wireshark-btn" onclick="loadPacketStream('sqli')">SQL Injection Attempt Capture</button>
+              <button class="wireshark-btn" onclick="loadPacketStream('ddos')">DDoS Flood Capture</button>
+            </div>
+            
+            <!-- Packet List -->
+            <div class="packet-table-wrapper">
+              <table class="packet-table">
+                <thead>
+                  <tr>
+                    <th style="width: 50px;">No.</th>
+                    <th style="width: 80px;">Time</th>
+                    <th style="width: 130px;">Source</th>
+                    <th style="width: 130px;">Destination</th>
+                    <th style="width: 80px;">Protocol</th>
+                    <th style="width: 60px;">Length</th>
+                    <th>Info</th>
+                  </tr>
+                </thead>
+                <tbody id="wireshark-packet-body">
+                  <!-- Packets populated by JS -->
+                </tbody>
+              </table>
+            </div>
+            
+            <!-- Wireshark Detail Panes -->
+            <div class="wireshark-panes">
+              <!-- Frame details -->
+              <div class="detail-pane" id="wireshark-tree-pane">
+                <div class="detail-node" style="color: var(--text-muted); font-style: italic;">
+                  Select a packet to view decoded header breakdown fields...
+                </div>
+              </div>
+              
+              <!-- Hex Dump pane -->
+              <div class="hex-pane" id="wireshark-hex-pane">
+                <div style="color: var(--text-muted); font-style: italic;">
+                  Select a packet to inspect binary hex structure representation...
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Packet Analysis Challenge -->
+          <div class="challenge-banner">
+            <div>
+              <h3 style="font-size: 0.95rem; color: #fff; margin-bottom: 4px;">🎯 Laboratory Challenge: Find the Leaked Credentials</h3>
+              <p style="font-size: 0.75rem; color: var(--text-muted); max-width: 650px;">
+                Analyze the "HTTP Login Credentials Capture" stream. Find the insecure HTTP POST packet, scroll down into the hex/ASCII payload representation, identify the leaked plaintext username and password credentials, and submit them below!
+              </p>
+            </div>
+            <div class="challenge-input-box">
+              <input type="text" class="challenge-input" id="challenge-flag-input" placeholder="Format: username:password">
+              <button class="btn btn-primary" onclick="checkChallengeFlag()">Submit Flag</button>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- TAB 4: PASSWORD HARDENING SIMULATOR -->
+      <section id="tab-password" class="tab-view">
+        <div class="grid-2">
+          <!-- Password Input & Metrics -->
+          <div class="card">
+            <h2 class="card-title">
+              <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              Real-Time Entropy & Crack Time Analyzer
+            </h2>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">
+              Input custom passwords to calculate brute-force calculations based on dictionary lists, keyboard patterns, and Shannon entropy scores.
+            </p>
+            
+            <div class="pwd-input-wrap">
+              <input type="password" class="pwd-input" id="pwd-input-field" placeholder="Enter target password to analyze...">
+              <button class="pwd-toggle-btn" id="pwd-toggle-visibility" onclick="togglePasswordVisibility()">
+                <!-- Eye icon -->
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            
+            <div class="pwd-strength-meter">
+              <div class="pwd-strength-bar" id="pwd-meter-fill"></div>
+            </div>
+            
+            <div class="pwd-strength-label">
+              <span id="pwd-meter-desc">Strength: Enter a password</span>
+              <span class="score" id="pwd-entropy-score">0 Bits</span>
+            </div>
+            
+            <div class="pwd-metric-grid">
+              <div class="pwd-metric-card">
+                <div class="pwd-metric-val" id="pwd-character-count">0</div>
+                <div class="pwd-metric-lbl">Total Characters</div>
+              </div>
+              <div class="pwd-metric-card">
+                <div class="pwd-metric-val" id="pwd-keyspace-size">0</div>
+                <div class="pwd-metric-lbl">Keyspace Size</div>
+              </div>
+            </div>
+            
+            <h3 style="font-size: 0.9rem; margin-bottom: 12px; color: #fff;">Improvement Recommendations:</h3>
+            <ul class="pwd-feedback-list" id="pwd-feedback-panel">
+              <li>Enter a password containing lowercase, uppercase, digits, and special characters.</li>
+            </ul>
+          </div>
+          
+          <!-- Brute Force Cracking Times -->
+          <div class="card">
+            <h2 class="card-title">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Brute Force Crack Cost Estimations
+            </h2>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">
+              Comparative cracking estimations based on standard hardware brute-force speeds (guessing speeds at billions of hashes per second).
+            </p>
+            
+            <table class="crack-time-table">
+              <tbody>
+                <tr id="row-crack-gpu" class="critical">
+                  <td class="device-name">Standard GPU Cluster (100 GH/s)</td>
+                  <td class="time-val" id="time-gpu">Instant</td>
+                </tr>
+                <tr id="row-crack-botnet" class="high">
+                  <td class="device-name">Distributed Botnet (10 TH/s)</td>
+                  <td class="time-val" id="time-botnet">Instant</td>
+                </tr>
+                <tr id="row-crack-super" class="medium">
+                  <td class="device-name">State Supercomputer (500 TH/s)</td>
+                  <td class="time-val" id="time-super">Instant</td>
+                </tr>
+                <tr id="row-crack-quantum" class="low">
+                  <td class="device-name">Quantum Guessing (100 PH/s)</td>
+                  <td class="time-val" id="time-quantum">Instant</td>
+                </tr>
+              </tbody>
+            </table>
+            
+            <div style="margin-top: 24px; padding: 16px; border-radius: 8px; background: rgba(0, 240, 255, 0.03); border: 1px solid var(--border-color);">
+              <h4 style="font-size: 0.85rem; color: var(--primary); margin-bottom: 6px;">💡 Real-world Tip: Entropy is Key</h4>
+              <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4;">
+                A longer passphrase (e.g., 4 random words: <span style="font-family: monospace; color:#fff;">correcthorsebatterystaple</span>) yields significantly higher entropy bits than a shorter, complex password (e.g. <span style="font-family: monospace; color:#fff;">Tr0ub4dor&amp;3</span>), and is much harder to break via dictionary or brute force attacks!
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- TAB 5: GLOSSARY & QUIZ -->
+      <section id="tab-glossary" class="tab-view">
+        <div class="glossary-controls">
+          <div style="display: flex; gap: 12px;">
+            <button class="btn btn-primary" id="toggle-glossary-view" onclick="switchGlossarySubtab('glossary')">Flashcards Glossary</button>
+            <button class="btn btn-outline" id="toggle-quiz-view" onclick="switchGlossarySubtab('quiz')">Take Quiz Challenge</button>
+          </div>
+          <input type="text" class="glossary-search" id="glossary-search-bar" placeholder="Search glossary terms..." oninput="filterGlossaryCards()">
+        </div>
+        
+        <!-- SUB-TAB 5A: GLOSSARY FLASHCARDS -->
+        <div id="subtab-glossary">
+          <div class="flashcard-grid" id="flashcard-grid-container">
+            <!-- Cards populated dynamically by JS -->
+          </div>
+        </div>
+        
+        <!-- SUB-TAB 5B: QUIZ CHALLENGE -->
+        <div id="subtab-quiz" style="display: none;">
+          <div class="card quiz-container">
+            <!-- Quiz Active Screen -->
+            <div id="quiz-active-screen">
+              <div class="quiz-header">
+                <span>Question <span id="quiz-question-number">1</span> of 10</span>
+                <span>Current Score: <span id="quiz-score-indicator">0</span></span>
+              </div>
+              <div class="quiz-progress-bar">
+                <div class="quiz-progress-fill" id="quiz-progress-fill-bar"></div>
+              </div>
+              <h3 class="quiz-question" id="quiz-question-text">Loading question metadata...</h3>
+              <div class="quiz-options" id="quiz-options-wrapper">
+                <!-- Loaded options -->
+              </div>
+              <div class="quiz-feedback" id="quiz-feedback-box">
+                <!-- Correct/Incorrect explanations -->
+              </div>
+              <div style="text-align: right;">
+                <button class="quiz-next-btn" id="quiz-submit-next-btn" onclick="handleQuizNext()">Next Question</button>
+              </div>
+            </div>
+            
+            <!-- Quiz Results Screen -->
+            <div id="quiz-result-screen" style="display: none;" class="quiz-results">
+              <div class="completion-badge">
+                <div class="badge-inner">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>
+                </div>
+              </div>
+              <h2 style="font-size: 1.6rem; color: #fff; margin-bottom: 8px;">SecOps Quiz Certified!</h2>
+              <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 24px;">
+                You scored <strong style="color: var(--primary);" id="quiz-final-score">8/10</strong> (<span id="quiz-final-percentage">80%</span>).
+              </p>
+              <div id="quiz-pass-feedback" style="margin-bottom: 24px; padding: 16px; border-radius: 8px; font-size: 0.85rem;">
+                <!-- Customized badge feedback -->
+              </div>
+              <button class="btn btn-primary" onclick="restartQuiz()">Restart Assessment</button>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- TAB 6: VULNERABILITY REPORT GENERATOR -->
+      <section id="tab-report" class="tab-view">
+        <div class="report-layout">
+          <!-- Form Configurator -->
+          <div class="card">
+            <h2 class="card-title">
+              <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Report Builder
+            </h2>
+            <div class="form-group">
+              <label for="rep-target">Target IP / Domain</label>
+              <input type="text" id="rep-target" class="form-input" value="10.0.8.45" oninput="updateReportPreview()">
+            </div>
+            <div class="form-group">
+              <label for="rep-scan-type">Footprinting Method</label>
+              <select id="rep-scan-type" class="form-select" onchange="updateReportPreview()">
+                <option value="Nmap Port Scan">Nmap Active Port Scan</option>
+                <option value="Nikto Web Assessment">Nikto Web Vulnerability Scan</option>
+                <option value="Comprehensive Audit">Comprehensive SecOps Audit</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label>Critical Findings Count</label>
+              <div class="slider-group">
+                <input type="range" id="rep-critical" min="0" max="10" value="2" oninput="updateReportPreview()">
+                <span class="slider-val" id="val-critical">2</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>High Findings Count</label>
+              <div class="slider-group">
+                <input type="range" id="rep-high" min="0" max="15" value="4" oninput="updateReportPreview()">
+                <span class="slider-val" id="val-high">4</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Medium Findings Count</label>
+              <div class="slider-group">
+                <input type="range" id="rep-medium" min="0" max="25" value="8" oninput="updateReportPreview()">
+                <span class="slider-val" id="val-medium">8</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Low Findings Count</label>
+              <div class="slider-group">
+                <input type="range" id="rep-low" min="0" max="50" value="15" oninput="updateReportPreview()">
+                <span class="slider-val" id="val-low">15</span>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="rep-findings">Executive Vulnerability Findings</label>
+              <textarea id="rep-findings" class="form-textarea" oninput="updateReportPreview()">Scanning target host 10.0.8.45 revealed multiple security gaps. Port 80 is hosting an outdated Apache server with CGI directories accessible. Port 22 is subject to SSH brute-forcing attempts due to slow authentication limits.</textarea>
+            </div>
+            
+            <div class="form-group">
+              <label for="rep-recs">Mitigation & Hardening Actions</label>
+              <textarea id="rep-recs" class="form-textarea" oninput="updateReportPreview()">1. Close port 80 or enforce reverse proxies.
+2. Upgrade SSH config to reject basic root logins and install Fail2ban rate limiting.
+3. Establish firewall rules to block IPs generating brute-force anomalies.</textarea>
+            </div>
+            
+            <button class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 10px;" onclick="printReportDocument()">
+              <svg viewBox="0 0 24 24"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+              Export Report (PDF)
+            </button>
+          </div>
+          
+          <!-- Live Preview Sheet container -->
+          <div class="report-sheet-wrapper">
+            <div class="report-sheet" id="print-sheet-preview">
+              <!-- Report markup generated dynamically -->
+            </div>
+          </div>
+        </div>
+      </section>
+      
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
